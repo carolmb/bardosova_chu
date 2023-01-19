@@ -32,9 +32,8 @@ def get_cocit(valid_pid, paper):
 
 if __name__ == '__main__':
     g = xn.xnet2igraph('data/citation_net.xnet')
-    valid_pid = set(g.vs['name'])
-
     
+    '''    
     dataPath = Path("/mnt/e/WoS/")
     WOSDataPath = dataPath / "Data/WoSAggregatedData2020_ALL.bgz"
     reader = WOS.DatabaseReader(WOSDataPath)
@@ -58,3 +57,28 @@ if __name__ == '__main__':
     
     out.close()
     reader.close()   
+    '''
+    edges = dd.read_csv('cocit_edges.csv', header=None, sep='\t')
+    
+    for journal in set(g.vs['journal']):
+        print(journal)
+        vertex_seq = g.vs.select(journal_eq=journal)
+        names = set(vertex_seq['name'])
+        edges_valid = edges[edges[0].isin(names) & edges[1].isin(names)]
+        edges_valid = edges_valid.compute()
+        subgraph = ig.Graph.TupleList(edges_valid.itertuples(index=False))
+        print(subgraph.es.attributes())
+
+        for i in range(subgraph.vcount()):
+            v = g.vs.find(name=subgraph.vs[i]['name'])
+            subgraph.vs[i]['journal'] = v['journal']
+            subgraph.vs[i]['year'] = v['year']
+            subgraph.vs[i]['abstract'] = v['abstract']
+        
+        subgraph.es['weight'] = 1
+        subgraph.simplify(combine_edges='sum')
+
+        print(subgraph.vs.attributes(), subgraph.vcount(), subgraph.ecount())
+        xn.igraph2xnet(subgraph, 'data/cocit_net_%s.xnet' % journal)
+
+
