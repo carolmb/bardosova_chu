@@ -100,7 +100,7 @@ def step0(chu_journal):
 def step1():
     Paper = namedtuple('Paper', ['id', 'year', 'cat', 'refs'])
     journals_set = set()
-    entryIndex = 0
+#     entryIndex = 0
     paper2journal = defaultdict(lambda:[])
     with dbgz.DBGZReader(WoSPaperCitationDataFilepath) as citationDB:
         print("Scheme: ", citationDB.scheme)
@@ -115,22 +115,22 @@ def step1():
                     if temp_name.lower() in journals:
                         p = Paper(entry['ID'], entry['Year'], ';'.join(entry['Categories']), ';'.join(entry['References']))
                         paper2journal[entry['VenueName']].append(p)
-                        break
-                entryIndex += 1
-            if entryIndex > 100000:
-                break
+#                         break
+#                 entryIndex += 1
+#             if entryIndex > 100000:
+#                 break
             pbar.update(len(entries))
 
     print(paper2journal.keys())
-#     output = open('paper_journals_cat_170122.csv', 'w') # tmep
-#     for journal, papers in paper2journal.items():
-#         for paper in papers:
-#             output.write(journal+'\t'+('%s\t%s\t%s\t%s\n' % paper))
+    output = open('paper_journals_cat_170122.csv', 'w') # tmep
+    for journal, papers in paper2journal.items():
+        for paper in papers:
+            output.write(journal+'\t'+('%s\t%s\t%s\t%s\n' % paper))
 
-#     output.close()
+    output.close()
 
-#     pbar.refresh()
-#     pbar.close()
+    pbar.refresh()
+    pbar.close()
 
     
 def step2(chu_journal, dyear):

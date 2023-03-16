@@ -88,39 +88,10 @@ def get_cits_net(names, file):
 
     return article_uid, article_journal, abstract, year, title, refs, edges,
 
-
-def get_coref(g, ids):
-    i1, i2 = ids
-    v1 = g.vs[i1]
-    v2 = g.vs[i2]
-    if set(v1['refs']) & set(v2['refs']):
-        return (v1['name'], v2['name'])
-
-
-def get_edges(vs_refs, i_iref):
-    i, iref = i_iref
-    output = open('temp/coref_%d_temp' % i , 'w')
-    iref = set(iref.split(','))
-    for j, jref in enumerate(vs_refs):
-        if i == j:
-            break
-        commom = iref & set(jref.split(','))
-        if len(commom) > 0:
-            w = len(commom)
-            edge = (i, j, w)
-            output.write("%s\t%s\t%d\n" % edge)
-    output.close()
-    
     
 if __name__ == '__main__':
 
 #     g = xn.xnet2igraph('subset_chu/citation_net_11journal_15102022.xnet')
-# #     g = xn.xnet2igraph('citation_net_170122.xnet')
-#     print(g.vcount(), g.ecount())
-#     print(min(g.vs['year']), max(g.vs['year']))
-#     vertex_seq = g.vs.select(year_eq=2021)
-#     print(np.unique(vertex_seq['journal'], return_counts=True))
-    
 
     g = xn.xnet2igraph('citation_net_170122.xnet')
     print(g.vcount(), g.ecount())
