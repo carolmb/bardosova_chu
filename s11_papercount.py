@@ -70,4 +70,27 @@ def step0():
     pbar.refresh()
     pbar.close()
 
-step0()
+# step0()
+
+# years_count = open('papers_count_090822.txt', 'r').read().split("\n\n")
+
+# for journal in years_count:
+#     print(journal)
+#     lines = journal.split('\n')
+#     journal_name = lines[0]
+#     total = 0
+#     for count in lines[1:]:
+#         total += int(count.split('\t')[1])
+#     print(journal_name, total)
+
+
+
+def get_count_papers_plot():
+    
+    file = json.loads(open('paper_journal_year_2020.txt').read())
+    for journal,cits in file.items():
+        if '2020' in cits:
+            print(journal, cits['2020'])
+#         print(journal, str(sum(cits.values())))
+        
+get_count_papers_plot()
