@@ -2,7 +2,7 @@
 
 This repository presents the data, scripts and results conducted for the study Machine Learning and NLP to obtain the landscape of materials applications in sciencific literature. For now, we are still in review process, but ASPS the manuscript will be referenced here. 
 
-## Requeriments
+## Requirements
 
 `TODO`
 
