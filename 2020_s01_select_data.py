@@ -1,3 +1,11 @@
+'''
+methods:
+- select papers from valid journals
+- select papers citing papers from valid journals
+- calculates IF
+- count number of papers per journal
+'''
+
 
 import dbgz, json
 import WOSRaw as wos
@@ -15,7 +23,6 @@ from collections import defaultdict
 # Path to the existing dbgz file
 WOSArchivePath = Path("/mnt/e/WoS/WoS_2022_DBGZ/WoS_2022_All.dbgz")
 
-# current_journal = 'Chem. Mater.'
 current_journal1 = 'Adv. Funct. Mater.'.lower()
 current_journal2 = 'ACS Appl. Mater. Interfaces'.lower()
 items_journal = []
@@ -24,15 +31,15 @@ valid_journals = [
     'acs nano',
     'adv. mater.',
     'chem. mat.', 
-#     'j. am. chem. soc.', 
-#     'j. mat. chem. b', # correto
-#     'j. mater. chem. a',  # correto
-#     'j. mater. chem. c', 
-#     'langmuir',
-#     'macromolecules',
-#     'nano lett.',
-#     'nat. mater.', # correto
-#     'nat. nanotechnol.'
+    'j. am. chem. soc.', 
+    'j. mat. chem. b', # correto
+    'j. mater. chem. a',  # correto
+    'j. mater. chem. c', 
+    'langmuir',
+    'macromolecules',
+    'nano lett.',
+    'nat. mater.', # correto
+    'nat. nanotechnol.'
 ]
 
 def get_papers_from_journal():
@@ -150,12 +157,12 @@ def get_impact(chu_journal): # citations
     
     print('get_impact...')
     
-    file = '%s_completedata_110423_bardo_infomap_110423_voting_schema_top15xnet' % chu_journal
+    file = '%s_completedata_110423_bardo_infomap_110423_voting_schema_top10.xnet' % chu_journal
     net = xnet.xnet2igraph(file)
 
     papers_per_year = defaultdict(lambda:defaultdict(lambda:0))
     for vtx in net.vs:
-        papers_per_year[vtx['cluster_top15']][vtx['year']] += 1
+        papers_per_year[vtx['cluster_top10']][vtx['year']] += 1
     
     valid_uids = net.vs['wos_id']
     valid_uids = set(valid_uids)
@@ -165,60 +172,52 @@ def get_impact(chu_journal): # citations
     papers_by_year = get_papers_year_union(valid_uids)
     bardo_dist = defaultdict(lambda: defaultdict(lambda: 0.0))
 
-    
-    perovskite_comm = 'I - perovskite solar cell, efficient, perovskites, stable, layer, efficiency, light-emitting diode, stability, halide perovskite, lead'
-    
     print('cits per year...')
     for y in range(2010, 2021): # 2000
         
         for paper in net.vs.select(year_le=y-1, year_ge=y-2):
-            bardo_comm = paper['cluster_top15']
+            bardo_comm = paper['cluster_top10']
             if paper['wos_id'] in papers_by_year:
                 cits_by_year = papers_by_year[paper['wos_id']]
-                if paper['wos_id'] == '000330589300016':
-                    print(cits_by_year)
                 if y in cits_by_year:
-                    if bardo_comm == perovskite_comm and y == 2015:
-                        print(paper['wos_id'],cits_by_year[y])
-                
                     bardo_dist[bardo_comm][y] += cits_by_year[y]
     
-#     print(bardo_dist.keys())
-#     out_copy = dict()
-#     C_others = defaultdict(lambda:0)
-#     P_others = defaultdict(lambda:0)
-#     for comm, count_cit_per_year in bardo_dist.items():
-#         if comm[0] in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']:
-#             out_copy[comm] = dict()
-# #         print(comm, count_cit_per_year.keys() )
-#         for y, count_cit in count_cit_per_year.items():
-#             y1 = 0
-#             y2 = 0
-#             if y-1 in papers_per_year[comm]:
-#                 y1 = papers_per_year[comm][y-1]
-#             if y-2 in papers_per_year[comm]:
-#                 y2 = papers_per_year[comm][y-2]
+    print(bardo_dist.keys())
+    out_copy = dict()
+    C_others = defaultdict(lambda:0)
+    P_others = defaultdict(lambda:0)
+    for comm, count_cit_per_year in bardo_dist.items():
+        if comm[0] in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']:
+            out_copy[comm] = dict()
+#         print(comm, count_cit_per_year.keys() )
+        for y, count_cit in count_cit_per_year.items():
+            y1 = 0
+            y2 = 0
+            if y-1 in papers_per_year[comm]:
+                y1 = papers_per_year[comm][y-1]
+            if y-2 in papers_per_year[comm]:
+                y2 = papers_per_year[comm][y-2]
             
-#             if comm[0] not in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']:
-#                 C_others[y] += count_cit
-#                 P_others[y] += (y1 + y2)
-#             else:
-#                 if y1 + y2 > 0:
-#                     out_copy[comm][y] = count_cit/(y1 + y2)
-#                 else:
-#                     out_copy[comm][y] = 0
+            if comm[0] not in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N']:
+                C_others[y] += count_cit
+                P_others[y] += (y1 + y2)
+            else:
+                if y1 + y2 > 0:
+                    out_copy[comm][y] = count_cit/(y1 + y2)
+                else:
+                    out_copy[comm][y] = 0
     
-#     out_copy['Others'] = dict()
-#     for y, v in C_others.items():
-#         if P_others[y] == 0:
-#             out_copy['Others'][y] = 0
-#         else:
-#             out_copy['Others'][y] = v/P_others[y]
+    out_copy['Others'] = dict()
+    for y, v in C_others.items():
+        if P_others[y] == 0:
+            out_copy['Others'][y] = 0
+        else:
+            out_copy['Others'][y] = v/P_others[y]
 
-#     json_str = json.dumps(out_copy)
-#     out = open('impact_factor_dist_%s_170423_top15.json' % chu_journal, 'w')
-#     out.write(json_str)
-#     out.close()
+    json_str = json.dumps(out_copy)
+    out = open('impact_factor_dist_%s_170423_top10.json' % chu_journal, 'w')
+    out.write(json_str)
+    out.close()
 
 
 # files = ['ACS Appl. Mater. Interfaces', 'Adv. Funct. Mater.']
