@@ -4,7 +4,7 @@ This repository presents the data, scripts and results conducted for the study M
 
 ## Requirements
 
-`TODO`
+`pip install -r requirements.txt`
 
 ## Running
 
