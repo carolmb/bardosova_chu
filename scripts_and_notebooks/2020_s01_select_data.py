@@ -68,18 +68,18 @@ def get_papers_from_journal():
 
 # files = ['ACS Appl. Mater. Interfaces_completedata_110423.xnet', 'Adv. Funct. Mater._completedata_110423.xnet']
 
-valid_uids = []
-files = glob.glob('*_completedata_170423_allbut.xnet')[:1]
-print(files)
+# valid_uids = []
+# files = glob.glob('*_completedata_170423_allbut.xnet')[:1]
+# print(files)
 
-for file in files:
-    print(file)
-    g = xnet.xnet2igraph(file)
-    valid_uids += g.vs['name']
+# for file in files:
+#     print(file)
+#     g = xnet.xnet2igraph(file)
+#     valid_uids += g.vs['name']
 
-print(valid_uids[:10])
-print(len(valid_uids))
-valid_uids = set(valid_uids)
+# print(valid_uids[:10])
+# print(len(valid_uids))
+# valid_uids = set(valid_uids)
 
 
 def get_citing():
@@ -105,7 +105,7 @@ def get_citing():
         test.write(json.dumps(item)+"\n")
     test.close()
 
-get_citing()
+# get_citing()
     
 def get_papers_year(valid_uids, filename):
     papers_by_year = dict()
@@ -223,29 +223,5 @@ def get_impact(chu_journal): # citations
 # files = ['ACS Appl. Mater. Interfaces', 'Adv. Funct. Mater.']
 # for file in files[1:]:
 #     get_impact(file)
-
-def get_paper_count():
-    paper_journal_year = defaultdict(lambda:defaultdict(lambda:0))
-    # Reading the file sequentially
-    with dbgz.DBGZReader(WOSArchivePath) as fd:
-        # getting the number of entries
-        print("\t Number of entries: ", fd.entriesCount)
-        # getting the schema (currently UID and data)
-        print("\t Scheme: ", fd.scheme)
-        # TQDM can be used to print the progressbar
-        for wosEntry in tqdm(fd.entries, total=fd.entriesCount):
-            UID = wosEntry["UID"]
-            entryData = wosEntry["data"] # XML records data
-            sourceData = wos.utilities.getSources(wosEntry)
-            title = wos.utilities.getSourceISOAbbreviation(sourceData) # Extracting the title
-            title = title.lower()
-            publicationInfo = wos.utilities.getPublicationInfo(wosEntry)
-            year = wos.utilities.getPublicationYear(publicationInfo)
-            paper_journal_year[title][year] += 1
-            
-
-    test = open('paper_journal_year_2020.txt','w')
-    test.write(json.dumps(paper_journal_year)+"\n")
-    test.close()
-    
 # get_impact('Adv. Funct. Mater.')
+
