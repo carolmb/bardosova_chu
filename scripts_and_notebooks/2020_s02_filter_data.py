@@ -92,7 +92,8 @@ def get_citing(valid_uids, paper_uid):
 # for line in papers:
 #     item = line[:-1].split("\t")
 #     paper_uid[item[0]] = (item[1], int(item[2][:-2]), item[3])
-    
+
+
 # valid_uids = set(paper_uid.keys())
 # print(len(valid_uids))
 
@@ -107,29 +108,28 @@ def get_impact_factor():
         print(file)    
         df = pd.read_csv(file, sep='\t', header=None)
         df.columns = ['citing', 'year', 'cited', 'cited_journal', 'cited_comm']
-        summary = df.groupby(['cited_journal','cited_comm','year']).count()
-        all_info.append(summary)
+        all_info.append(df)
     
     print("citing data...")
     all_info = pd.concat(all_info)
-    all_info_cits = all_info.groupby(['cited_journal','cited_comm','year']).sum()
+    all_info_cits = all_info.groupby(['cited_journal','cited_comm', 'year']).count()
     
     # get numer of papers per year
     print("papers count...")
     valid_ids = pd.read_csv('valid_ids.txt', sep='\t')
     valid_ids.columns = ['wos_id', 'comm', 'year', 'journal']
-    valid_ids_grouped = valid_ids.groupby(['comm', 'year', 'journal'], as_index=False).count()
+    valid_ids_grouped = valid_ids.groupby(['year', 'comm', 'journal'], as_index=False).count()
     print(valid_ids_grouped.columns)
     
     data = defaultdict(lambda:defaultdict(lambda:[]))
-    
+
     print('calculating impact factor...')
     for key,cit_count in all_info_cits.iterrows():
         journal, comm, year = key
-        
         if year < 1990 or year > 2020:
             continue
         
+        # verificar o plot do tamanho das comunidades e comparar com os dados daqui
         papers1 = valid_ids_grouped.loc[(valid_ids_grouped['journal'] == journal)
                                        & (valid_ids_grouped['comm'] == comm)
                                        & (valid_ids_grouped['year'] == year-1)]
@@ -137,6 +137,7 @@ def get_impact_factor():
                                & (valid_ids_grouped['comm'] == comm)
                                & (valid_ids_grouped['year'] == year-2)]
         
+        # calcular o fator de impacto da revista (como referencia)
         if len(papers1) > 0:
             papers_count = papers1['wos_id'].iloc[0]
         else:
@@ -154,7 +155,7 @@ def get_impact_factor():
     output.write(json.dumps(data))
     output.close()
         
-# get_impact_factor()
+get_impact_factor()
 
 def plot_impact_factor():
     cmap = plt.get_cmap("tab10")
@@ -188,7 +189,7 @@ def plot_impact_factor():
         plt.title(journal)
         plt.legend(prop={'size': 8}, bbox_to_anchor=(1.05,1.05))
         plt.tight_layout()
-        plt.savefig('{}_impact_factor_2020.pdf'.format(journal))
+        plt.savefig('../results/review2/{}_impact_factor_2020.pdf'.format(journal))
         
         
 plot_impact_factor()
