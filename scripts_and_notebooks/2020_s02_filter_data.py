@@ -101,6 +101,10 @@ def get_citing(valid_uids, paper_uid):
 # get_citing(valid_uids, paper_uid)
 
 
+def cit_papercount(row):
+    return pd.Series({'cits':len(row), 'journal':row['cited_journal'].iloc[0], 'comm': row['cited_comm'].iloc[0]})
+
+
 def get_impact_factor():
     files = glob.glob('citing_temp/citing_valid*.csv')
     all_info = []
@@ -113,6 +117,10 @@ def get_impact_factor():
     print("citing data...")
     all_info = pd.concat(all_info)
     all_info_cits = all_info.groupby(['cited_journal','cited_comm', 'year']).count()
+    
+    checkcits = all_info.groupby(['cited', 'year']).apply(cit_papercount)
+    checkcits.to_csv('papers_cits_details.txt', header=None, sep='\t')
+    
     
     # get numer of papers per year
     print("papers count...")
@@ -148,10 +156,9 @@ def get_impact_factor():
         
         cit_count = cit_count.iloc[0]
         impact_factor = cit_count/papers_count
-        
-        data[journal][comm].append((year, impact_factor))
+        data[journal][comm].append((year, impact_factor, int(cit_count), int(papers_count)))
 
-    output = open('impact_factor_2020.json', 'w')
+    output = open('impact_factor_2020_details.json', 'w')
     output.write(json.dumps(data))
     output.close()
         
@@ -192,4 +199,4 @@ def plot_impact_factor():
         plt.savefig('../results/review2/{}_impact_factor_2020.pdf'.format(journal))
         
         
-plot_impact_factor()
+# plot_impact_factor()

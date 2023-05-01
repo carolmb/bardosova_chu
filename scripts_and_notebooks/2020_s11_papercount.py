@@ -1,4 +1,4 @@
-import dbgz, json
+import dbgz, json, glob
 
 import numpy as np
 import pandas as pd
@@ -49,4 +49,22 @@ def get_count_papers_plot():
 
 
 # get_paper_count()
-get_count_papers_plot()
+# get_count_papers_plot()
+
+
+def wos_papers_full_data():
+    files = glob.glob('citing_temp/citing_valid*.csv')
+    all_papers = []
+    for file in files:
+        df = pd.read_csv(file, header=None, sep='\t')
+        papers = pd.concat([df[0],df[2]])
+        all_papers.append(papers)
+        
+    all_papers = pd.concat(all_papers).unique()
+    print(len(all_papers))
+    outfile = open('data_all_papers.csv', 'w')
+    for row in all_papers:
+        outfile.write(row+'\n')
+    outfile.close()
+        
+wos_papers_full_data()
